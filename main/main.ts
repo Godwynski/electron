@@ -1,10 +1,30 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow } from 'electron';
 import * as path from 'path';
 
 let mainWindow: BrowserWindow | null = null;
-
 const isDev = !app.isPackaged;
 
+// ---------------------------------------------------------------------------
+// Single Instance Lock
+// ---------------------------------------------------------------------------
+// Prevent multiple instances of the app from running
+const gotTheLock = app.requestSingleInstanceLock();
+
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    // If a second instance is launched, focus the main window
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus();
+    }
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Window Creation
+// ---------------------------------------------------------------------------
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,

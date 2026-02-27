@@ -49,7 +49,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <PowerSyncContext.Provider value={powerSync}>
       {init ? children : (
         <div className="min-h-screen bg-brand-900 flex items-center justify-center">
-          <p className="text-primary-500 font-medium tracking-wide">Initializing Offline Library Space...</p>
+          <p className="text-primary-600 font-medium tracking-wide">Initializing Offline Library Space...</p>
         </div>
       )}
     </PowerSyncContext.Provider>

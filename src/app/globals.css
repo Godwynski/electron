@@ -4,19 +4,22 @@
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --font-serif: var(--font-playfair), ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
 
-  --color-brand-900: #0f172a; /* Slate dark background */
-  --color-brand-800: #1e293b; /* Slate surface */
-  --color-primary-500: #10b981; /* Emerald green */
-  --color-primary-600: #059669; /* Emerald green hover */
-  --color-accent-500: #f59e0b; /* Amber gold */
+  --color-brand-900: #F8FAFC; /* Light background */
+  --color-brand-800: #FFFFFF; /* White surface */
+  --color-brand-700: #F1F5F9; /* Slightly darker surface for cards */
+  --color-primary-400: #3B82F6; /* STI Blue light */
+  --color-primary-500: #0057A8; /* STI Blue */
+  --color-primary-600: #00437F; /* STI Blue dark */
+  --color-accent-400: #FADF63; /* STI Yellow light */
+  --color-accent-500: #FFD100; /* STI Yellow */
 
   --color-background: var(--color-brand-900);
-  --color-foreground: #f8fafc;
+  --color-foreground: #0f172a;
 }
 
 :root {
   --background: var(--color-brand-900);
-  --foreground: #f8fafc;
+  --foreground: #0f172a;
 }
 
 body {
@@ -33,9 +36,9 @@ body {
   background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #262626;
+  background: #cbd5e1;
   border-radius: 10px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #404040;
+  background: #94a3b8;
 }
