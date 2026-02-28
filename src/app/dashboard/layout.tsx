@@ -10,18 +10,24 @@ import {
   LogOut, 
   Menu, 
   Library,
-  ChevronRight
+  ChevronRight,
+  Users,
+  ClipboardList,
+  BarChart3
 } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { user, loading } = useAuth(true); // require auth
+  const { user, role, loading } = useAuth(true); // require auth
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const pathname = usePathname();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -35,10 +41,16 @@ export default function DashboardLayout({
     );
   }
 
+  const isAdmin = role === 'admin';
+  const isStaff = role === 'staff' || isAdmin;
+
   const navItems = [
-    { icon: LayoutDashboard, label: "Overview", href: "/dashboard", active: true },
-    { icon: Library, label: "Collections", href: "#", active: false },
-    { icon: Settings, label: "Settings", href: "#", active: false },
+    { icon: LayoutDashboard, label: "Overview", href: "/dashboard", active: pathname === "/dashboard" },
+    { icon: Library, label: "Collections", href: "/dashboard/collections", active: pathname === "/dashboard/collections" },
+    { icon: ClipboardList, label: isStaff ? "Borrow Requests" : "My Requests", href: "/dashboard/requests", active: pathname === "/dashboard/requests" },
+    { icon: BarChart3, label: "Reports", href: "/dashboard/reports", active: pathname === "/dashboard/reports" },
+    ...(isAdmin ? [{ icon: Users, label: "Users", href: "/dashboard/users", active: pathname === "/dashboard/users" }] : []),
+    ...(isStaff ? [{ icon: Settings, label: "Settings", href: "#", active: pathname === "/dashboard/settings" }] : []),
   ];
 
   return (
@@ -48,7 +60,7 @@ export default function DashboardLayout({
 
       {/* Desktop Sidebar */}
       <aside className="hidden lg:block w-72 shrink-0 z-20">
-        <SidebarContent user={user} handleLogout={handleLogout} navItems={navItems} />
+        <SidebarContent user={user} role={role} handleLogout={handleLogout} navItems={navItems} />
       </aside>
 
       {/* Mobile Sidebar Overlay */}
@@ -69,7 +81,7 @@ export default function DashboardLayout({
               transition={{ type: "spring", bounce: 0, duration: 0.4 }}
               className="lg:hidden fixed inset-y-0 left-0 w-72 z-50 shadow-2xl"
             >
-              <SidebarContent user={user} handleLogout={handleLogout} navItems={navItems} />
+              <SidebarContent user={user} role={role} handleLogout={handleLogout} navItems={navItems} />
             </motion.aside>
           </>
         )}
@@ -109,10 +121,12 @@ interface SidebarNavItem {
 
 function SidebarContent({ 
   user, 
+  role,
   handleLogout, 
   navItems 
 }: { 
   user: User | null; 
+  role: string | null;
   handleLogout: () => void; 
   navItems: SidebarNavItem[];
 }) {
@@ -133,8 +147,9 @@ function SidebarContent({
       {/* Navigation */}
       <div className="flex-1 py-6 px-4 space-y-2">
         {navItems.map((item, idx) => (
-          <button
+          <Link
             key={idx}
+            href={item.href}
             className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all ${
               item.active 
                 ? "bg-primary-50 text-primary-600 border border-primary-100/50 shadow-sm" 
@@ -146,7 +161,7 @@ function SidebarContent({
               <span className="font-medium tracking-wide">{item.label}</span>
             </div>
             {item.active && <ChevronRight className="w-4 h-4" />}
-          </button>
+          </Link>
         ))}
       </div>
 
@@ -156,7 +171,7 @@ function SidebarContent({
           <p className="text-sm font-medium text-slate-700 truncate mb-1">
             {user?.email}
           </p>
-          <p className="text-xs text-slate-500 mb-4">Head Librarian</p>
+          <p className="text-xs text-slate-500 mb-4 capitalize">{role || 'Borrower'}</p>
           
           <button 
             onClick={handleLogout}

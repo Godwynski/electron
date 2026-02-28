@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { PowerSyncContext } from '@powersync/react';
 import { powerSync, initPowerSync } from '@/lib/powersync/db';
 import { supabase } from '@/lib/supabase';
+import { AuthProvider } from '@/contexts/AuthContext';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
@@ -47,11 +48,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <PowerSyncContext.Provider value={powerSync}>
-      {init ? children : (
-        <div className="min-h-screen bg-brand-900 flex items-center justify-center">
-          <p className="text-primary-600 font-medium tracking-wide">Initializing Offline Library Space...</p>
-        </div>
-      )}
+      <AuthProvider>
+        {init ? children : (
+          <div className="min-h-screen bg-brand-900 flex items-center justify-center">
+            <p className="text-primary-600 font-medium tracking-wide">Initializing Offline Library Space...</p>
+          </div>
+        )}
+      </AuthProvider>
     </PowerSyncContext.Provider>
   );
 }

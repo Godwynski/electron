@@ -1,52 +1,21 @@
-"use client";
-
-import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
-import { User, Session } from '@supabase/supabase-js';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuthContext } from '@/contexts/AuthContext';
 
 export function useAuth(requireAuth: boolean = false) {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { user, session, role, loading } = useAuthContext();
   const router = useRouter();
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
-      if (error) {
-        console.error("Error fetching session:", error.message);
-      }
-      setSession(session);
-      setUser(session?.user ?? null);
-      
+    if (!loading) {
       if (requireAuth && !session) {
         router.push('/');
       } else if (!requireAuth && session) {
-        // If we don't require auth (e.g. login page), redirect away from login if already authenticated
+        // Only redirect from landing if we have a session
         router.push('/dashboard');
       }
-      setLoading(false);
-    });
+    }
+  }, [requireAuth, router, session, loading]);
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        if (event === 'SIGNED_OUT' && requireAuth) {
-           router.push('/');
-        } else if (event === 'SIGNED_IN' && !requireAuth) {
-           router.push('/dashboard');
-        }
-      }
-    );
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [requireAuth, router]);
-
-  return { user, session, loading };
+  return { user, session, role, loading };
 }

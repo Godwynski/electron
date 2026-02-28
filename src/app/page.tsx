@@ -9,7 +9,9 @@ import { isElectron, getRedirectUrl } from "@/lib/env";
 
 // Validates that the email follows the STI Alabang format: LastName.IDNumber@alabang.sti.edu.ph
 function isValidStiEmail(email: string): boolean {
-  const stiEmailRegex = /^[a-zA-Z]+\.\d+@alabang\.sti\.edu\.ph$/i;
+  // Matches LastName.IDNumber@alabang.sti.edu.ph
+  // LastName can contain letters, dots, or hyphens
+  const stiEmailRegex = /^[a-zA-Z.-]+\.\d+@alabang\.sti\.edu\.ph$/i;
   return stiEmailRegex.test(email.trim());
 }
 
@@ -33,6 +35,15 @@ export default function Login() {
 
   // Cleanup interval on unmount
   useEffect(() => {
+    // Check for error query parameter
+    const queryParams = new URLSearchParams(window.location.search);
+    const error = queryParams.get("error");
+    if (error) {
+       setErrorMsg(decodeURIComponent(error));
+       // Clear error from URL
+       window.history.replaceState(null, "", window.location.pathname);
+    }
+
     return () => {
       if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
     };
@@ -146,6 +157,28 @@ export default function Login() {
         setErrorMsg(String(error));
       }
     } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const signInWithAzure = async () => {
+    setIsLoading(true);
+    setErrorMsg("");
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'azure',
+        options: {
+          scopes: 'email offline_access',
+          redirectTo: getRedirectUrl(),
+        },
+      });
+      if (error) throw error;
+    } catch (error) {
+      if (error instanceof Error) {
+        setErrorMsg(error.message);
+      } else {
+        setErrorMsg(String(error));
+      }
       setIsLoading(false);
     }
   };
@@ -479,6 +512,32 @@ export default function Login() {
                 )}
               </motion.button>
             </form>
+
+            <div className="relative my-8">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-200"></div>
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-white px-4 text-slate-400 font-medium tracking-wider">Or continue with</span>
+              </div>
+            </div>
+
+            <motion.button
+              whileHover={!isLoading ? { scale: 1.01 } : {}}
+              whileTap={!isLoading ? { scale: 0.98 } : {}}
+              onClick={signInWithAzure}
+              disabled={isLoading}
+              className="w-full bg-white border border-slate-200 text-slate-700 font-medium py-3.5 rounded-xl flex items-center justify-center gap-3 hover:bg-slate-50 transition-all shadow-sm group"
+            >
+              <svg className="w-5 h-5" viewBox="0 0 23 23" xmlns="http://www.w3.org/2000/svg">
+                <path fill="#f3f3f3" d="M0 0h23v23H0z"/>
+                <path fill="#f35325" d="M1 1h10v10H1z"/>
+                <path fill="#81bc06" d="M12 1h10v10H12z"/>
+                <path fill="#05a6f0" d="M1 12h10v10H1z"/>
+                <path fill="#ffba08" d="M12 12h10v10H12z"/>
+              </svg>
+              Sign in with Microsoft
+            </motion.button>
 
             <div className="mt-8 text-center">
               <p className="text-sm text-slate-500">
